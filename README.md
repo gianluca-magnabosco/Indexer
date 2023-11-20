@@ -6,7 +6,7 @@
 * Utilize o seguinte comando:
 
 ```
-    gcc ./lib/freq.c ./lib/freq_word.c ./lib/search.c ./indexer.c -o indexer
+    gcc ./lib/freq.c ./lib/freq_word.c ./lib/search.c ./indexer.c -o indexer -lm
 ```
 
 * O comando acima irá gerar um executável chamado indexer.

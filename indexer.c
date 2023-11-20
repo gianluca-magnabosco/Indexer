@@ -56,6 +56,10 @@ int main(int argc, char **argv) {
         char *termo = argv[2];
         int qtd_arquivos = argc - 3;
         char **arquivos = (char **) malloc(sizeof(char *) * qtd_arquivos);
+        if (arquivos == NULL) {
+            printf("\nErro ao alocar memoria!\n");
+            exit(1);
+        }
 
         for (int i = 3; i < argc; i++) {
             arquivos[i - 3] = strdup(argv[i]);

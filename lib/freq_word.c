@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "freq_word.h"
 
@@ -12,7 +13,7 @@ void handleFreqWord(char* palavra, char* nomeArquivo) {
     if ((arquivo = fopen(nomeArquivo, "r")) == NULL) {
         printf("\nErro ao abrir arquivo: %s!\n", nomeArquivo);
         fclose(arquivo);
-        return;
+        exit(1);
     }
 
     int newWord = 0, skipped = 0;

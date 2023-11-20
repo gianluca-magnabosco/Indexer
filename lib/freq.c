@@ -16,7 +16,7 @@ void handleFreq(char *nomeArquivo, int n) {
     if ((arquivo = fopen(nomeArquivo, "r")) == NULL) {
         printf("\nErro ao abrir arquivo: %s!\n", nomeArquivo);
         fclose(arquivo);
-        return;
+        exit(1);
     }
 
     while (!feof(arquivo)) {
@@ -64,6 +64,7 @@ TrieNode* createTrieNode() {
     TrieNode* trieNode = (TrieNode*) malloc(sizeof(TrieNode));
     if (trieNode == NULL) {
         printf("\nErro ao alocar memoria!\n");
+        exit(1);
     }
 
     trieNode->isEnd = 0;
@@ -80,6 +81,7 @@ MinHeap* createMinHeap(int tamanho) {
     MinHeap* minHeap = (MinHeap*) malloc(sizeof(MinHeap));
     if (minHeap == NULL) {
         printf("\nErro ao alocar memoria!\n");
+        exit(1);
     }
     minHeap->tamanho = tamanho;
     minHeap->count = 0;
@@ -87,6 +89,7 @@ MinHeap* createMinHeap(int tamanho) {
     minHeap->array = (MinHeapNode*) malloc(sizeof(MinHeapNode) * tamanho);
     if (minHeap->array == NULL) {
         printf("\nErro ao alocar memoria!\n");
+        exit(1);
     }
 
     return minHeap;
@@ -128,6 +131,7 @@ void insertMinHeap(MinHeap* minHeap, TrieNode** root, char* palavra) {
         minHeap->array[count].palavra = (char*) malloc(sizeof(char) * (strlen(palavra) + 1));
         if (minHeap->array[count].palavra == NULL) {
             printf("\nErro ao alocar memoria!\n");
+            exit(1);
         }
         strcpy(minHeap->array[count].palavra, palavra);
 
@@ -148,6 +152,7 @@ void insertMinHeap(MinHeap* minHeap, TrieNode** root, char* palavra) {
         minHeap->array[0].palavra = (char*) malloc(sizeof(char) * (strlen(palavra) + 1));
         if (minHeap->array[0].palavra == NULL) {
             printf("\nErro ao alocar memoria!\n");
+            exit(1);
         }
         strcpy(minHeap->array[0].palavra, palavra);
 

@@ -6,6 +6,8 @@
 
 void handleSearch(char *termo, char **arquivos, int qtd_arquivos) {
 
+    char *termoOriginal = strdup(termo);
+
     int numeroPalavras = countPalavras(termo);
 
     PalavraNode *palavras = initializePalavras(termo, numeroPalavras, arquivos, qtd_arquivos);
@@ -15,7 +17,7 @@ void handleSearch(char *termo, char **arquivos, int qtd_arquivos) {
     }
 
     for (int i = 0; i < numeroPalavras; i++) {
-        calculateIDF(&palavras[i], arquivos, qtd_arquivos);
+        palavras[i].inverseDocumentFrequency = calculateIDF(palavras[i], arquivos, qtd_arquivos);
     }
 
     for (int i = 0; i < qtd_arquivos; i++) {
@@ -23,11 +25,33 @@ void handleSearch(char *termo, char **arquivos, int qtd_arquivos) {
     }
 
 
+    for (int i = 0; i < qtd_arquivos; i++) {
+        double TD_IDF_TERMO = 0.0;
+
+        for (int j = 0; j < numeroPalavras; j++) {
+            TD_IDF_TERMO += palavras[j].arquivosFreq[i].TF_IDF;
+        }
+
+        TD_IDF_TERMO = TD_IDF_TERMO / numeroPalavras;
+
+        printf("Arquivo: %s Termo: \"%s\" TF-IDF: %f\n", arquivos[i], termoOriginal, TD_IDF_TERMO);
+    }
+
+
+
     for (int i = 0; i < numeroPalavras; i++) {
         for (int j = 0; j < qtd_arquivos; j++) {
             printf("Palavra %s: Arquivo %s - Count Palavra %d - Count Total %d - TF %f - IDF %f - TF-IDF %f\n", palavras[i].palavra, palavras[i].arquivosFreq[j].nomeArquivo, palavras[i].arquivosFreq[j].countPalavra, palavras[i].arquivosFreq[j].countTotal, palavras[i].arquivosFreq[j].termFrequency, palavras[i].inverseDocumentFrequency, palavras[i].arquivosFreq[j].TF_IDF);
         }
     }
+
+    for (int i = 0; i < numeroPalavras; i++) {
+        free(palavras[i].palavra);
+        free(palavras[i].arquivosFreq);
+    }
+    
+    free(palavras);
+    free(termoOriginal);
 }
 
 int countPalavras(char *termo) {
@@ -47,19 +71,20 @@ PalavraNode* initializePalavras(char *termo, int numeroPalavras, char **arquivos
 
     if (arrayPalavras == NULL) {
         printf("\nErro ao alocar memoria!\n");
+        exit(1);
     }
 
     char *token = strtok(termo, " ");
 
     for (int i = 0; i < numeroPalavras; i++) {
         arrayPalavras[i].palavra = strdup(token);
-        arrayPalavras[i].numArquivos = qtd_arquivos;
         arrayPalavras[i].inverseDocumentFrequency = 0.0;
 
         arrayPalavras[i].arquivosFreq = (PalavraArquivoFreq*) malloc(sizeof(PalavraArquivoFreq) * qtd_arquivos);
 
         if (arrayPalavras[i].arquivosFreq == NULL) {
             printf("\nErro ao alocar memoria!\n");
+            exit(1);
         }
 
         for (int j = 0; j < qtd_arquivos; j++) {
@@ -86,7 +111,7 @@ void calculateTF(PalavraNode *palavras, int numeroPalavras, char *nomeArquivo, i
     if ((arquivo = fopen(nomeArquivo, "r")) == NULL) {
         printf("\nErro ao abrir arquivo: %s!\n", nomeArquivo);
         fclose(arquivo);
-        return;
+        exit(1);
     }
 
     while (!feof(arquivo)) {
@@ -132,16 +157,20 @@ void calculateTF(PalavraNode *palavras, int numeroPalavras, char *nomeArquivo, i
     }
 }
 
-void calculateIDF(PalavraNode *palavra, char **arquivos, int qtd_arquivos) {
+double calculateIDF(PalavraNode palavra, char **arquivos, int qtd_arquivos) {
     int presente = 0;
 
     for (int i = 0; i < qtd_arquivos; i++) {
-        if (palavra->arquivosFreq[i].countPalavra > 0) {
+        if (palavra.arquivosFreq[i].countPalavra > 0) {
             presente++;
         }
     }
 
-    palavra->inverseDocumentFrequency = log10((double) qtd_arquivos / presente);
+    if (presente == 0) {
+        return 0.0;
+    }
+
+    return log10((double) qtd_arquivos / presente);
 }
 
 void calculateTFIDF(PalavraNode *palavra, int numeroPalavras, int indiceArquivo) {
