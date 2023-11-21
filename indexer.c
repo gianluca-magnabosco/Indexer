@@ -9,7 +9,7 @@
 
 int main(int argc, char **argv) {
     if (argc < 3) {
-        printf("\nInsira um parametro valido!\nUso: %s [--freq N ARQUIVO | --freq-palavra PALAVRA ARQUIVO | --search TERMO ARQUIVO [ARQUIVO ...]]\n", argv[0]);
+        printf("\nInsira um parametro valido!\nUso: indexer [--freq N ARQUIVO | --freq-palavra PALAVRA ARQUIVO | --search TERMO ARQUIVO [ARQUIVO ...]]\n");
         return 1;
     }
 
