@@ -56,6 +56,7 @@ int main(int argc, char **argv) {
         char *termo = argv[2];
         int qtd_arquivos = argc - 3;
         char **arquivos = (char **) malloc(sizeof(char *) * qtd_arquivos);
+
         if (arquivos == NULL) {
             printf("\nErro ao alocar memoria!\n");
             exit(1);
@@ -75,7 +76,6 @@ int main(int argc, char **argv) {
 
         return 0;
     }
-
 
 
     printf("\nErro: Opcao nao encontrada!\n");

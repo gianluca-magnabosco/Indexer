@@ -24,34 +24,12 @@ void handleSearch(char *termo, char **arquivos, int qtd_arquivos) {
         calculateTFIDF(palavras, numeroPalavras, i);
     }
 
+    TermoNode* termoNodes = initializeTermoNodes(palavras, numeroPalavras, arquivos, qtd_arquivos);
+    quicksort(termoNodes, 0, qtd_arquivos - 1);
 
-    for (int i = 0; i < qtd_arquivos; i++) {
-        double TD_IDF_TERMO = 0.0;
-
-        for (int j = 0; j < numeroPalavras; j++) {
-            TD_IDF_TERMO += palavras[j].arquivosFreq[i].TF_IDF;
-        }
-
-        TD_IDF_TERMO = TD_IDF_TERMO / numeroPalavras;
-
-        printf("Arquivo: %s Termo: \"%s\" TF-IDF: %f\n", arquivos[i], termoOriginal, TD_IDF_TERMO);
-    }
-
-
-
-    for (int i = 0; i < numeroPalavras; i++) {
-        for (int j = 0; j < qtd_arquivos; j++) {
-            printf("Palavra %s: Arquivo %s - Count Palavra %d - Count Total %d - TF %f - IDF %f - TF-IDF %f\n", palavras[i].palavra, palavras[i].arquivosFreq[j].nomeArquivo, palavras[i].arquivosFreq[j].countPalavra, palavras[i].arquivosFreq[j].countTotal, palavras[i].arquivosFreq[j].termFrequency, palavras[i].inverseDocumentFrequency, palavras[i].arquivosFreq[j].TF_IDF);
-        }
-    }
-
-    for (int i = 0; i < numeroPalavras; i++) {
-        free(palavras[i].palavra);
-        free(palavras[i].arquivosFreq);
-    }
+    printResults(palavras, numeroPalavras, arquivos, qtd_arquivos, termoOriginal, termoNodes);
     
-    free(palavras);
-    free(termoOriginal);
+    freeEverything(palavras, numeroPalavras, termoNodes, qtd_arquivos, termoOriginal);
 }
 
 int countPalavras(char *termo) {
@@ -99,6 +77,29 @@ PalavraNode* initializePalavras(char *termo, int numeroPalavras, char **arquivos
     }
 
     return arrayPalavras;
+}
+
+
+TermoNode* initializeTermoNodes(PalavraNode* palavras, int numeroPalavras, char** arquivos, int qtd_arquivos) {
+    TermoNode* termoNodes = (TermoNode*) malloc(qtd_arquivos * sizeof(TermoNode));
+    if (termoNodes == NULL) {
+        printf("\nErro ao alocar memoria!\n");
+        exit(1);
+    }
+
+    for (int i = 0; i < qtd_arquivos; i++) {
+        TermoNode* termoNode = &termoNodes[i];
+        termoNode->nomeArquivo = strdup(arquivos[i]);
+        termoNode->tf_idf = 0.0;
+
+        for (int j = 0; j < numeroPalavras; j++) {
+            termoNode->tf_idf += palavras[j].arquivosFreq[i].TF_IDF;
+        }
+
+        termoNode->tf_idf = termoNode->tf_idf / numeroPalavras;
+    }
+
+    return termoNodes;
 }
 
 
@@ -181,3 +182,66 @@ void calculateTFIDF(PalavraNode *palavra, int numeroPalavras, int indiceArquivo)
     }
 }
 
+void swap(TermoNode *a, TermoNode *b) {
+    TermoNode temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+int partition(TermoNode *arr, int low, int high) {
+    double pivo = arr[high].tf_idf;
+    int i = low - 1;
+
+    for (int j = low; j <= high - 1; j++) {
+        if (arr[j].tf_idf >= pivo) {
+            i++;
+            swap(&arr[i], &arr[j]);
+        }
+    }
+
+    swap(&arr[i + 1], &arr[high]);
+    return i + 1;
+}
+
+void quicksort(TermoNode *arr, int low, int high) {
+    if (low < high) {
+        int part = partition(arr, low, high);
+
+        quicksort(arr, low, part - 1);
+        quicksort(arr, part + 1, high);
+    }
+}
+
+void printResults(PalavraNode* palavras, int numeroPalavras, char** arquivos, int qtd_arquivos, char* termoOriginal, TermoNode* termoNodes) {
+    for (int i = 0; i < numeroPalavras; i++) {
+        printf("\nPalavra: \"%s\"\n", palavras[i].palavra);
+        
+        for (int j = 0; j < qtd_arquivos; j++) {
+            printf("Arquivo %s - Count Palavra %d - Count Total %d - TF %f - IDF %f - TF-IDF %f\n", palavras[i].arquivosFreq[j].nomeArquivo, palavras[i].arquivosFreq[j].countPalavra, palavras[i].arquivosFreq[j].countTotal, palavras[i].arquivosFreq[j].termFrequency, palavras[i].inverseDocumentFrequency, palavras[i].arquivosFreq[j].TF_IDF);
+        }
+    }
+
+    printf("\n-------------------------------------------------------------------------------\n");
+
+    printf("Termo: \"%s\"\n", termoOriginal);
+    for (int i = 0; i < qtd_arquivos; i++) {
+        printf("Arquivo: %s - TF-IDF: %f\n", termoNodes[i].nomeArquivo, termoNodes[i].tf_idf);
+    }
+
+    printf("-------------------------------------------------------------------------------\n");
+}
+
+void freeEverything(PalavraNode* palavras, int numeroPalavras, TermoNode* termoNodes, int qtd_arquivos, char* termoOriginal) {
+    for (int i = 0; i < numeroPalavras; i++) {
+        free(palavras[i].palavra);
+        free(palavras[i].arquivosFreq);
+    }
+
+    for (int i = 0; i < qtd_arquivos; i++) {
+        free(termoNodes[i].nomeArquivo);
+    }
+
+    free(termoNodes);
+    free(palavras);
+    free(termoOriginal);
+}
